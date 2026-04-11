@@ -271,37 +271,186 @@ The following four design constraints were identified and addressed in the final
 
 ---
 
-## 4. Team Management
+### 3.3.1 Components
 
-### 4.1 Team Roles
+The final solution consists of four Java classes, each with a distinct purpose and testing strategy:
 
-| Member                  | Primary Responsibilities                                        |
-| ----------------------- | --------------------------------------------------------------- |
-| Glen Issac              | Model implementation, path testing, report lead                 |
-| Shivam Jigneshbhai Soni | Controller implementation, integration testing, repo management |
-| Luka Dundjerovic        | View implementation, validation testing, data flow testing      |
+| Component | Purpose | Testing Method |
+|-----------|---------|----------------|
+| `MinesweeperModel` | Manages game state: grid, mines, revealed/flagged cells, win/loss detection | Unit testing with seeded `Random` for deterministic boards. Path testing and data flow testing applied to `revealCell()` and `floodReveal()`. |
+| `MinesweeperView` | Renders the board and messages to a `PrintStream` | Unit testing with captured `ByteArrayOutputStream`. Output verified against expected string patterns. |
+| `MinesweeperController` | Parses user input, validates commands, delegates to Model and View | Unit testing with simulated `Scanner` input. Boundary value, equivalence class, and decision table testing applied to input parsing. |
+| `App` | Entry point that wires Model, View, and Controller together | Integration testing across all three components. |
 
-### 4.2 Communication & Collaboration
+The block diagram below shows how these components interact:
 
-- **Meeting Cadence:** Weekly team meetings (in-person and Discord)
-- **Version Control:** GitHub with feature branches and pull request reviews
-- **Task Tracking:** Shared checklist in the repository (`requirements.md`)
-- **Conflict Resolution:** Design disagreements resolved through evaluation tables (as demonstrated in Solutions 1-3 comparison) with testability as the primary metric
+```
+┌──────────────────────────────────────────────────────────────────┐
+│                           App.java                               │
+│               (creates and wires all components)                 │
+└──────────┬──────────────────────────────────────┬────────────────┘
+           │ creates                              │ creates
+           ▼                                      ▼
+┌─────────────────────┐                ┌─────────────────────────┐
+│  MinesweeperModel   │                │   MinesweeperView       │
+│                     │                │                         │
+│  - mines[][]        │◄──── reads ────│  - PrintStream (inject) │
+│  - revealed[][]     │                │  - displayBoard(model)  │
+│  - flagged[][]      │                │  - displayMessage(msg)  │
+│  - GameState enum   │                │  - ANSI color output    │
+│  - Random (inject)  │                └─────────────────────────┘
+│                     │                           ▲
+│  - revealCell()     │                           │ calls
+│  - toggleFlag()     │                           │
+│  - countMines()     │                ┌─────────────────────────┐
+│  - floodReveal()    │◄── delegates ──│  MinesweeperController  │
+│  - checkWin()       │                │                         │
+│  - isInBounds()     │                │  - Scanner (injected)   │
+└─────────────────────┘                │  - startGame()          │
+                                       │  - processInput(line)   │
+                                       │  - handleReveal(r, c)   │
+                                       │  - handleFlag(r, c)     │
+                                       └─────────────────────────┘
+```
+*Figure 4: Component block diagram for the final MVC solution*
 
-### 4.3 Contribution Summary
+### 3.3.2 Environmental, societal, safety, and economic considerations
 
-All team members contributed to brainstorming, code review, and testing. Individual contributions are tracked through GitHub commit history.
+**Economic factors:** The project uses only free, open-source tools: Java SE, JUnit 5, and standard text editors. No paid libraries, cloud services, or proprietary frameworks are required, resulting in zero cost for development and deployment.
+
+**Reliability:** Input validation exists at every layer. The Controller validates user input before passing it to the Model. Out-of-bounds coordinates, malformed commands, and invalid state transitions are all handled with informative error messages rather than crashes. The `GameState` enum prevents invalid state transitions (for example, revealing cells after the game is over). A suite of 71 tests provides regression safety.
+
+**Sustainability and environmental factors:** The CLI interface avoids GUI framework overhead. The application runs entirely in-memory with no database or file I/O during gameplay and uses efficient algorithms (bounded flood-fill with early termination). Adjacent mine counts are precomputed once during board construction rather than recalculated on each render, reducing unnecessary computation.
+
+**Ethics:** The application performs no hidden data collection, makes no network requests, and has fully transparent logic. All game rules are deterministic and verifiable through the test suite. The seeded `Random` allows game outcomes to be reproduced and audited, so players can verify fairness by reviewing the source code.
+
+### 3.3.3 Test cases and results
+
+The complete test plan, including all test requirements, equivalence classes, boundary values, decision tables, state transition diagrams, control flow graphs, and use cases, is documented in the project's [TESTING.md](TESTING.md) file.
+
+The test suite covers the following testing techniques as required by the project specification:
+
+| Testing Technique | Target Component | Summary |
+|---|---|---|
+| Path testing | `MinesweeperModel.revealCell()` | Control flow graph constructed, independent paths identified and tested |
+| Data flow testing | `MinesweeperModel.floodReveal()` | Def-use pairs traced for key variables (`row`, `col`, `revealed[][]`) |
+| Integration testing | Model + Controller, Model + View | Verified correct interaction across component boundaries |
+| Boundary value testing | `MinesweeperController.processInput()` | Grid edge coordinates (0, max-1), just outside bounds (-1, max) |
+| Equivalence class testing | `MinesweeperController.processInput()` | Valid commands, invalid formats, out-of-range values, non-integer input |
+| Decision table testing | `MinesweeperController.handleRevealCommand()` | Combinations of game state, cell state (revealed/flagged/hidden), and input validity |
+| State transition testing | `GameState` enum transitions | PLAYING to WON, PLAYING to LOST, invalid transitions from terminal states |
+| Use case testing | End-to-end gameplay | Full game scenarios from start to win/loss |
+
+All 71 test cases pass. Test execution output and detailed results are available in TESTING.md.
+
+### 3.3.4 Limitations
+
+The current implementation has several known limitations:
+
+1. The board size and mine count are fixed at compile time. A future version could accept these as command-line arguments or prompt the user at startup.
+2. There is no save/load functionality. If the application is closed, the game state is lost.
+3. The CLI interface, while functional, does not support mouse input or window resizing. Players must type coordinates manually, which is slower than clicking on a graphical grid.
+4. The flood-fill algorithm uses recursion, which could cause a stack overflow on very large grids (though this is not a concern for typical Minesweeper board sizes up to 30x30).
+5. There is no difficulty selection menu. Adjusting difficulty requires modifying source constants.
+6. ANSI color codes used for the display may not render correctly on all terminal emulators, particularly older Windows command prompts.
 
 ---
 
-## Team Members
+## 4. Team Work
 
-<div align="center">
+### 4.1 Meeting 1
 
-| Name                    | Student ID |
-| ----------------------- | ---------- |
-| Glen Issac              | 200499313  |
-| Shivam Jigneshbhai Soni | 200474721  |
-| Luka Dundjerovic        | 200494589  |
+Time: January 16, 2026, 3:00 PM to 4:00 PM
 
-</div>
+Agenda: Project kickoff and task distribution
+
+| Team Member | Previous Task | Completion State | Next Task |
+|---|---|---|---|
+| Glen Issac | N/A | N/A | Draft problem definition (Section 2.1) |
+| Shivam Jigneshbhai Soni | N/A | N/A | Draft design requirements (Section 2.2) |
+| Luka Dundjerovic | N/A | N/A | Set up GitHub repo and project structure |
+
+### 4.2 Meeting 2
+
+Time: January 30, 2026, 3:00 PM to 4:30 PM
+
+Agenda: Review deliverables 1-2, plan Solution 1 and 2
+
+| Team Member | Previous Task | Completion State | Next Task |
+|---|---|---|---|
+| Glen Issac | Problem definition | 100% | Solution 1 monolithic implementation |
+| Shivam Jigneshbhai Soni | Design requirements | 100% | Solution 1 test cases |
+| Luka Dundjerovic | Repo setup | 100% | Solution 2 partial MVC implementation |
+
+### 4.3 Meeting 3
+
+Time: February 13, 2026, 3:00 PM to 4:00 PM
+
+Agenda: Review Solutions 1-2 deliverable, begin final solution planning
+
+| Team Member | Previous Task | Completion State | Next Task |
+|---|---|---|---|
+| Glen Issac | Solution 1 implementation | 100% | Model implementation (Solution 3) |
+| Shivam Jigneshbhai Soni | Solution 1 tests | 100% | Controller implementation (Solution 3) |
+| Luka Dundjerovic | Solution 2 implementation | 100% | View implementation (Solution 3) |
+
+### 4.4 Meeting 4
+
+Time: March 20, 2026, 3:00 PM to 5:00 PM
+
+Agenda: Integration testing review and report finalization
+
+| Team Member | Previous Task | Completion State | Next Task |
+|---|---|---|---|
+| Glen Issac | Model + path testing | 100% | Report sections 3.3, data flow testing |
+| Shivam Jigneshbhai Soni | Controller + integration tests | 90% | Finish integration tests, repo cleanup |
+| Luka Dundjerovic | View + validation testing | 100% | TESTING.md, boundary/equivalence tests |
+
+---
+
+## 5. Project Management
+
+The project followed the deliverable schedule outlined in the course project description. The Gantt chart below shows the timeline of each task:
+
+![Gantt Chart](img/gantt.png)
+*Figure 5: Project Gantt chart*
+
+| ID | Task Name | Start | End | Predecessor |
+|---|---|---|---|---|---|
+| 1 | Problem Definition | Jan 12 | Jan 23 | None |
+| 2 | Design Constraints & Requirements | Jan 23 | Jan 30 | 1 |
+| 3 | Iterative Design Process (Solution 1 & 2) | Jan 30 | Feb 13 | 2 |
+| 4 | Final Design (Solution 3), Implementation & Testing | Feb 13 | Mar 27 | 3 |
+| 5 | Collaborative Teamwork & Communication Skills | Jan 23 | Apr 10 | 1 |
+
+**Critical Path:** 1 → 2 → 3 → 4
+
+All tasks on the critical path had zero slack, meaning any delay in these tasks would have directly pushed the project deadline. Task 5 (Teamwork & Communication) ran in parallel with all other tasks and was updated continuously throughout the project.
+
+---
+
+## 6. Conclusion and Future Work
+
+This project successfully delivered a command-line Minesweeper application that satisfies all five design constraints: CLI-only operation, MVC architecture, JUnit automated testing, deterministic behavior, and standard Java compatibility. The iterative design process moved through three solutions, each improving testability, and the final MVC design enabled all eight required testing techniques to be applied systematically.
+
+The 71-test suite covers path testing, data flow analysis, integration testing, boundary value testing, equivalence class testing, decision table testing, state transition testing, and use case testing. All tests pass and are documented in TESTING.md.
+
+For future improvements, the following changes would add value:
+
+- Configurable board sizes and mine counts through command-line arguments or a startup menu.
+- A save/load feature using file serialization so players can resume games.
+- A difficulty selection system (beginner, intermediate, expert) with preset grid configurations.
+- A timer and scoring system to track player performance.
+- Improved terminal compatibility by detecting ANSI support and falling back to plain text rendering when needed.
+
+---
+
+## 7. References
+
+[1] Oracle, "Java SE Documentation," 2025. [Online]. Available: https://docs.oracle.com/en/java/javase/. [Accessed: Apr. 10, 2026].
+
+[2] JUnit Team, "JUnit 5 User Guide," 2025. [Online]. Available: https://junit.org/junit5/docs/current/user-guide/. [Accessed: Apr. 10, 2026].
+
+[3] E. Gamma, R. Helm, R. Johnson, and J. Vlissides, *Design Patterns: Elements of Reusable Object-Oriented Software*. Reading, MA: Addison-Wesley, 1994.
+
+[4] R. S. Pressman and B. R. Maxim, *Software Engineering: A Practitioner's Approach*, 9th ed. New York, NY: McGraw-Hill, 2020.
