@@ -36,8 +36,8 @@ minesweeper-tdd/
 ## How to Build and Run
 
 ```bash
-# Compile source
-javac -d out -sourcepath src src/model/*.java src/view/*.java src/controller/*.java src/App.java
+# Compile source (targeting Java 8 compatibility)
+javac -d out --release 8 -sourcepath src src/model/*.java src/view/*.java src/controller/*.java src/App.java
 
 # Run the game
 java -cp out App
@@ -46,13 +46,14 @@ java -cp out App
 ## How to Run Tests
 
 ```bash
-# Compile tests
-javac -d out -cp "out:lib/junit-4.13.2.jar:lib/hamcrest-core-1.3.jar" test/*.java
+# Compile tests (targeting Java 8 compatibility)
+javac -d out --release 8 -cp "out:lib/junit-4.13.2.jar:lib/hamcrest-core-1.3.jar" test/*.java
 
 # Run all 71 tests
 java -cp "out:lib/junit-4.13.2.jar:lib/hamcrest-core-1.3.jar" org.junit.runner.JUnitCore MinesweeperModelTest MinesweeperIntegrationTest MinesweeperValidationTest
 ```
 
+> **Note:** If you are using JDK 8, you can omit the `--release 8` flag.
 > **Windows:** Replace `:` with `;` in classpath separators.
 
 ## How to Play
