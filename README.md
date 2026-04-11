@@ -37,7 +37,7 @@ minesweeper-tdd/
 
 Click below to watch our final presentation for this project.
 
-[![Watch the demo](https://i9.ytimg.com/vi/QP_Nnw_cIgY/mqdefault.jpg?sqp=CNy_584G-oaymwEmCMACELQB8quKqQMa8AEB-AH-CYAC0AWKAgwIABABGGUgZShlMA8=&rs=AOn4CLCfJEU3lT8H6Zn6ri2jbGg9NbNXPQ)](https://www.youtube.com/watch?v=XFXS6lTApFU)
+[![Watch the demo](https://i9.ytimg.com/vi/QP_Nnw_cIgY/mqdefault.jpg?sqp=CNy_584G-oaymwEmCMACELQB8quKqQMa8AEB-AH-CYAC0AWKAgwIABABGGUgZShlMA8=&rs=AOn4CLCfJEU3lT8H6Zn6ri2jbGg9NbNXPQ)](https://youtu.be/QP_Nnw_cIgY)
 ---
 
 
