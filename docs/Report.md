@@ -415,14 +415,6 @@ The project followed the deliverable schedule outlined in the course project des
 ![Gantt Chart](img/gantt.png)
 *Figure 5: Project Gantt chart*
 
-| ID | Task Name | Start | End | Predecessor |
-|---|---|---|---|---|---|
-| 1 | Problem Definition | Jan 12 | Jan 23 | None |
-| 2 | Design Constraints & Requirements | Jan 23 | Jan 30 | 1 |
-| 3 | Iterative Design Process (Solution 1 & 2) | Jan 30 | Feb 13 | 2 |
-| 4 | Final Design (Solution 3), Implementation & Testing | Feb 13 | Mar 27 | 3 |
-| 5 | Collaborative Teamwork & Communication Skills | Jan 23 | Apr 10 | 1 |
-
 **Critical Path:** 1 → 2 → 3 → 4
 
 All tasks on the critical path had zero slack, meaning any delay in these tasks would have directly pushed the project deadline. Task 5 (Teamwork & Communication) ran in parallel with all other tasks and was updated continuously throughout the project.
